@@ -1,0 +1,382 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SmartHome API",
+    "version": "1.0.0",
+    "description": "Smart Home Control System RESTful API"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development Server"
+    }
+  ],
+  "paths": {
+    "/devices": {
+      "get": {
+        "summary": "Get All Devices",
+        "description": "Retrieve all devices categorized by type (control/sensor)",
+        "tags": ["Devices"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceListResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        }
+      }
+    },
+    "/devices/seed": {
+      "post": {
+        "summary": "Initialize Default Devices",
+        "description": "Clear database and insert default device data",
+        "tags": ["Devices"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{id}/toggle": {
+      "post": {
+        "summary": "Toggle Device State",
+        "description": "Turn a control device on/off",
+        "tags": ["Devices"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Device ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Parameters"
+          },
+          "404": {
+            "description": "Device Not Found"
+          }
+        }
+      }
+    },
+    "/ai/understand": {
+      "post": {
+        "summary": "AI Intent Understanding",
+        "description": "Parse user input and identify the control intent",
+        "tags": ["AI"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnderstandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnderstandResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Parameters"
+          }
+        }
+      }
+    },
+    "/ai/execute": {
+      "post": {
+        "summary": "Execute AI Command",
+        "description": "Execute the AI recommended device control action",
+        "tags": ["AI"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecuteResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Device Not Found"
+          }
+        }
+      }
+    },
+    "/mcu/commands": {
+      "get": {
+        "summary": "Get Pending Commands",
+        "description": "MCU fetches pending commands to execute",
+        "tags": ["MCU"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mcu/report": {
+      "post": {
+        "summary": "MCU Report Data",
+        "description": "MCU reports sensor data or command completion",
+        "tags": ["MCU"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ControlDevice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "location": { "type": "string" },
+          "icon": { "type": "string" },
+          "iconColor": { "type": "string" },
+          "active": { "type": "boolean" }
+        }
+      },
+      "SensorDevice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "location": { "type": "string" },
+          "icon": { "type": "string" },
+          "iconColor": { "type": "string" },
+          "data": { "type": "object" },
+          "lastUpdate": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DeviceListResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "control": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/ControlDevice" }
+              },
+              "sensor": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/SensorDevice" }
+              }
+            }
+          }
+        }
+      },
+      "SeedResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "data": { "type": "array" }
+        }
+      },
+      "ToggleRequest": {
+        "type": "object",
+        "required": ["active"],
+        "properties": {
+          "active": { "type": "boolean", "description": "Target device state" }
+        }
+      },
+      "ToggleResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "deviceId": { "type": "string" },
+              "active": { "type": "boolean" },
+              "message": { "type": "string" },
+              "commandId": { "type": "string" }
+            }
+          }
+        }
+      },
+      "UnderstandRequest": {
+        "type": "object",
+        "required": ["input"],
+        "properties": {
+          "input": { "type": "string", "description": "User voice/text input" },
+          "location": { "type": "string", "default": "客厅", "description": "Current room location" }
+        }
+      },
+      "UnderstandResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "understanding": {
+            "type": "object",
+            "properties": {
+              "intent": { "type": "string" },
+              "deviceId": { "type": "string" },
+              "deviceName": { "type": "string" },
+              "deviceIcon": { "type": "string" },
+              "parameters": { "type": "array" }
+            }
+          }
+        }
+      },
+      "ExecuteRequest": {
+        "type": "object",
+        "required": ["deviceId", "action"],
+        "properties": {
+          "deviceId": { "type": "string" },
+          "action": { "type": "string", "enum": ["on", "off", "set"] },
+          "parameters": { "type": "object" }
+        }
+      },
+      "ExecuteResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "commandId": { "type": "string" }
+        }
+      },
+      "CommandsResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "commandId": { "type": "string" },
+                "deviceId": { "type": "string" },
+                "action": { "type": "string" },
+                "parameters": { "type": "object" }
+              }
+            }
+          }
+        }
+      },
+      "ReportRequest": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["sensor_data", "command_complete"] },
+          "sensorData": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "deviceId": { "type": "string" },
+                "temperature": { "type": "number" },
+                "humidity": { "type": "number" },
+                "pressure": { "type": "number" },
+                "light": { "type": "number" },
+                "uv": { "type": "number" },
+                "voc": { "type": "number" }
+              }
+            }
+          },
+          "completedCommands": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "ReportResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  }
+}
