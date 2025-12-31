@@ -24,45 +24,16 @@ export default defineEventHandler(async (event) => {
     }
     
     logger.info('🎬 收到场景控制请求', { scene, userId })
-    console.log(`\n========== 场景控制请求 ==========`)
-    console.log(`📝 场景描述: ${scene}`)
-    console.log(`👤 用户ID: ${userId || '未指定'}`)
-    console.log(`⏰ 请求时间: ${new Date().toLocaleString('zh-CN')}`)
-    console.log(`=====================================\n`)
     
     // 1. AI 理解场景
     logger.info('🤖 开始 AI 场景理解...')
-    console.log(`🤖 正在调用 AI 分析场景...`)
     
     const understanding = await understandScene(scene, userId)
     
-    console.log(`\n✅ AI 理解完成！`)
-    console.log(`📊 场景识别: ${understanding.scene}`)
-    console.log(`🎯 需要调整的设备数量: ${understanding.actions.length}`)
-    
-    if (understanding.reasoning) {
-      console.log(`\n💭 AI 推理过程:`)
-      console.log(understanding.reasoning)
-    }
-    
-    console.log(`\n📋 设备控制计划:`)
-    understanding.actions.forEach((action, index) => {
-      console.log(`  ${index + 1}. ${action.deviceName} (${action.deviceId})`)
-      console.log(`     当前状态: ${JSON.stringify(action.currentState)}`)
-      console.log(`     目标状态: ${JSON.stringify(action.targetState)}`)
-      console.log(`     操作: ${action.action}`)
-      console.log(`     理由: ${action.reason}`)
-    })
-    
     // 2. 执行设备控制
     logger.info('⚙️ 开始执行设备控制...')
-    console.log(`\n⚙️ 开始执行设备控制...`)
     
     const execution = await executeSceneActions(understanding, userId)
-    
-    console.log(`\n✅ 设备控制执行完成！`)
-    console.log(`📊 成功更新设备数: ${execution.updated}`)
-    console.log(`📦 生成命令数: ${execution.commands.length}`)
     
     // 3. 记录到 AI 日志
     for (const action of understanding.actions) {
@@ -85,9 +56,6 @@ export default defineEventHandler(async (event) => {
     const duration = Date.now() - startTime
     logger.api('POST', '/api/scene/execute', 200, duration)
     
-    console.log(`\n⏱️ 总耗时: ${duration}ms`)
-    console.log(`========== 请求完成 ==========\n`)
-    
     // 4. 返回结果
     return {
       success: true,
@@ -104,8 +72,6 @@ export default defineEventHandler(async (event) => {
     
   } catch (error: any) {
     logger.error('❌ 场景控制失败', error)
-    console.error(`\n❌ 场景控制失败:`, error.message)
-    console.log(`========== 请求失败 ==========\n`)
     
     if (error.statusCode) {
       throw error

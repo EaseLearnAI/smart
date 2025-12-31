@@ -5,8 +5,7 @@ export default defineNitroPlugin(async () => {
   
   try {
     await mongoose.connect('mongodb://localhost:27017/smarthome')
-    console.log('✅ MongoDB connected successfully')
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error)
+    // MongoDB connection error
   }
 })
